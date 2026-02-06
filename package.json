@@ -8,6 +8,6 @@
     "@mariozechner/pi-coding-agent": "*"
   },
   "pi": {
-    "extensions": ["./extensions/rust-style-checker.ts", "./extensions/shellcheck.ts"]
+    "extensions": ["./extensions/python-ty.ts", "./extensions/rust-style-checker.ts", "./extensions/shellcheck.ts"]
   }
 }

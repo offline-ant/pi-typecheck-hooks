@@ -4,6 +4,9 @@ Type and style checking hooks for [pi](https://github.com/badlogic/pi-mono). Run
 
 ## Hooks
 
+### python-ty
+Runs [ty](https://github.com/astral-sh/ty) on Python files after edit/write. Requires `ty` to be installed (`uv tool install ty` or `pipx install ty`). Shows a status bar warning if not available.
+
 ### shellcheck
 Runs [shellcheck](https://www.shellcheck.net/) on shell scripts (bash/sh) after edit/write. Requires `shellcheck` to be installed; silently skips if not available.
 
