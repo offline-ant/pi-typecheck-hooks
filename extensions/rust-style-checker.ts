@@ -7,6 +7,10 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 export default function (pi: ExtensionAPI) {
+  // Track previously reported contexts to avoid duplicate warnings.
+  // Key: normalized ~5 surrounding lines around each occurrence.
+  const reportedContexts = new Set<string>();
+
   pi.on("tool_result", async (event, ctx) => {
     // Only check write and edit tools
     if (event.toolName !== "write" && event.toolName !== "edit") {
@@ -71,9 +75,22 @@ export default function (pi: ExtensionAPI) {
         }
       }
 
-      if (!hasJustification) {
-        warnings.push(`Line ${i + 1}: ${line.trim()}`);
+      if (hasJustification) {
+        continue;
       }
+
+      // Build a context fingerprint from ~5 surrounding lines to deduplicate.
+      // If the same surrounding code was already reported, skip it.
+      const contextKey = lines.slice(contextStart, contextEnd + 1)
+        .map(l => l.trim())
+        .join("\n");
+      
+      if (reportedContexts.has(contextKey)) {
+        continue;
+      }
+
+      reportedContexts.add(contextKey);
+      warnings.push(`Line ${i + 1}: ${line.trim()}`);
     }
 
     if (warnings.length === 0) {
