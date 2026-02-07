@@ -10,6 +10,10 @@ import * as path from "node:path";
 import { execSync, spawnSync } from "node:child_process";
 
 export default function (pi: ExtensionAPI) {
+  // Track previously reported diagnostics to avoid duplicate warnings.
+  // Key: file path + shellcheck output.
+  const reportedDiagnostics = new Set<string>();
+
   // Check if shellcheck is available
   const hasShellcheck = (() => {
     try {
@@ -88,6 +92,13 @@ export default function (pi: ExtensionAPI) {
     if (!output.trim()) {
       return;
     }
+
+    // Deduplicate: skip if we already reported the exact same diagnostics for this file.
+    const diagnosticKey = `${absolutePath}\n${output.trim()}`;
+    if (reportedDiagnostics.has(diagnosticKey)) {
+      return;
+    }
+    reportedDiagnostics.add(diagnosticKey);
 
     // Send feedback to the LLM via a custom message
     const feedback = `Shell errors in ${filePath}:\n${output.trim()}`;

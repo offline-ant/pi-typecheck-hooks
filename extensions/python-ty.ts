@@ -9,6 +9,10 @@ import * as path from "node:path";
 import { execSync, spawnSync } from "node:child_process";
 
 export default function (pi: ExtensionAPI) {
+  // Track previously reported diagnostics to avoid duplicate warnings.
+  // Key: file path + diagnostic lines joined.
+  const reportedDiagnostics = new Set<string>();
+
   // Check if ty is available
   const hasTy = (() => {
     try {
@@ -89,6 +93,13 @@ export default function (pi: ExtensionAPI) {
     if (lines.length === 0) {
       return;
     }
+
+    // Deduplicate: skip if we already reported the exact same diagnostics for this file.
+    const diagnosticKey = `${absolutePath}\n${lines.join("\n")}`;
+    if (reportedDiagnostics.has(diagnosticKey)) {
+      return;
+    }
+    reportedDiagnostics.add(diagnosticKey);
 
     const feedback = `Python type errors in ${filePath}:\n${lines.join("\n")}`;
 
